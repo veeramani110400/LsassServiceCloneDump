@@ -19,22 +19,22 @@ This technique exploits that trust relationship by registering a custom service 
 7. The clone is terminated, the service self-stops, and the loader auto-cleans all registry artifacts.
 
 ```
-┌─────────────────┐    creates     ┌──────────────────────────────────┐
-│ SvchostLoader    │───registry───>│ HKLM\Services\CredDumpSvc        │
-│ (admin console)  │   + group     │   Type=0x20 (SHARE_PROCESS)      │
-│                  │               │   Parameters\ServiceDll=our.dll  │
+┌─────────────────┐    creates    ┌──────────────────────────────────┐
+│ SvchostLoader   │ ───registry───│ HKLM\Services\CredDumpSvc        │
+│ (admin console) │   + group     │   Type=0x20 (SHARE_PROCESS)      │
+│                 │               │   Parameters\ServiceDll=our.dll  │
 └────────┬────────┘               └──────────────────────────────────┘
          │ starts via SCM
          ▼
 ┌────────────────────────────────┐ OpenProcess  ┌───────────┐
-│ svchost.exe -k CredDiagGroup   │────────────>│ lsass.exe  │
-│  └─ SvcCloneDll.dll            │  (trusted!)  │  PID 908   │
+│ svchost.exe -k CredDiagGroup   │────────────> │ lsass.exe │
+│  └─ SvcCloneDll.dll            │  (trusted!)  │  PID 908  │
 │     ServiceMain()              │              └───────────┘
 │       │                        │                    │
 │       │ NtCreateProcessEx      │                    │
 │       ▼                        │              ┌───────────┐
-│     Fork LSASS clone  ────────────────────── │ Clone PID  │
-│       │                        │              │ (suspended)│
+│     Fork LSASS clone  ──────────────────────  │ Clone PID │
+│       │                        │              │(suspended)│
 │       │ MiniDumpWriteDump      │              └───────────┘
 │       ▼                        │
 │     lsass.dmp written          │
